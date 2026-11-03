@@ -60,7 +60,7 @@ done
 ## Chart validation and manual installation
 
 The chart has no dependencies. `test-sha` is a render-only placeholder; do not
-install it. No Ingress, ALB, HPA or application CD is configured.
+install it. For current Ingress, ALB, HPA and application CI/CD instructions, see public-delivery-operations.md.
 
 ```bash
 helm lint helm/url-shortner

@@ -1,7 +1,7 @@
 # Nonprod AWS permission plan
 
 This document prepares later steps; it does not grant permissions. Account:
-`957280466878`. Region: `us-east-1`. Review the exact Terraform resources and
+`478728046113`. Region: `us-east-1`. Review the exact Terraform resources and
 provider API calls before preparing each provisioning policy.
 
 ## Separate responsibilities
@@ -10,8 +10,9 @@ provider API calls before preparing each provisioning policy.
   The sandbox administrator controls that identity's permissions. Do not copy
   its credentials into GitHub or extend the CI role to match the local identity.
 - GitHub's `url-shortner-github-actions` role uses OIDC from
-  `repo:mouslim21@55384360/url-shortner@1442711965:ref:refs/heads/main`, with audience
-  `sts.amazonaws.com`. Do not add a GitHub Environment to its job without reviewing
+  `repo:mouslim21@55384360/url-shortner-testing@1444289754:ref:refs/heads/main`, and
+  `repo:mouslim21@55384360/url-shortner-testing@1444289754:ref:refs/heads/feature/debug`,
+  with audience `sts.amazonaws.com`. Do not add a GitHub Environment to its job without reviewing
   the resulting OIDC subject, which differs from the branch subject.
 - Step 4C adds only ECR authentication and image-push permissions. It creates no
   repositories and grants no infrastructure provisioning or Kubernetes access.
@@ -24,9 +25,9 @@ The reviewable policy is `modules/github-oidc/ecr-push-policy.json.tftpl`.
 `ecr:GetAuthorizationToken` requires resource `*`. Repository-specific push and image-identity read actions target
 only these exact ARNs:
 
-- `arn:aws:ecr:us-east-1:957280466878:repository/url-shortner-frontend`
-- `arn:aws:ecr:us-east-1:957280466878:repository/url-shortner-url-service`
-- `arn:aws:ecr:us-east-1:957280466878:repository/url-shortner-analytics-service`
+- `arn:aws:ecr:us-east-1:478728046113:repository/url-shortner-frontend`
+- `arn:aws:ecr:us-east-1:478728046113:repository/url-shortner-url-service`
+- `arn:aws:ecr:us-east-1:478728046113:repository/url-shortner-analytics-service`
 
 No repository creation, deletion, policy administration, or image deletion is
 allowed. `ecr:BatchGetImage` permits immutable-tag identity checks on reruns. Full image

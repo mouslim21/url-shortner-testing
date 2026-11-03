@@ -10,7 +10,7 @@ from pathlib import Path
 
 COMPONENTS = ("frontend", "url-service", "analytics-service")
 REGISTRY = (
-    f"{os.getenv('AWS_ACCOUNT_ID', '957280466878')}.dkr.ecr."
+    f"{os.getenv('AWS_ACCOUNT_ID', '478728046113')}.dkr.ecr."
     f"{os.getenv('AWS_REGION', 'us-east-1')}.amazonaws.com"
 )
 

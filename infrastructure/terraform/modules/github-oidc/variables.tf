@@ -15,7 +15,7 @@ variable "existing_oidc_provider_arn" {
 variable "aws_account_id" {
   description = "Expected AWS account for IAM principal validation."
   type        = string
-  default     = "957280466878"
+  default     = "478728046113"
 }
 
 variable "aws_region" {

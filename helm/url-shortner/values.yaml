@@ -1,5 +1,5 @@
 image:
-  registry: 957280466878.dkr.ecr.us-east-1.amazonaws.com
+  registry: 478728046113.dkr.ecr.us-east-1.amazonaws.com
   # Rendering placeholder only. Override with a shared full Git SHA to deploy.
   tag: test-sha
   pullPolicy: IfNotPresent

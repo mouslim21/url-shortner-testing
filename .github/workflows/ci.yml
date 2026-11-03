@@ -1,13 +1,21 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Publish validated images and deploy nonprod
+        type: boolean
+        default: false
   push:
-    branches: [main]
+    branches: [main, feature/debug]
   pull_request:
     branches: [main]
 
 env:
-  AWS_ACCOUNT_ID: '957280466878'
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID || '478728046113' }}
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME || 'url-shortner-nonprod-eks' }}
 
 permissions:
   contents: read
@@ -135,7 +143,7 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
       - name: Upload validated image
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: success() && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/debug')))
         uses: actions/upload-artifact@v7.0.2
         with:
           name: image-${{ matrix.component }}
@@ -147,7 +155,7 @@ jobs:
   publish:
     name: Publish validated images to ECR
     needs: [compose, lint, tests, images]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'mouslim21/url-shortner'
+    if: github.repository == 'mouslim21/url-shortner-testing' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/debug')))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:
@@ -166,7 +174,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
           allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
           role-session-name: github-images-${{ github.run_id }}
@@ -182,9 +190,9 @@ jobs:
   deploy:
     name: Deploy nonprod
     needs: [publish]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'mouslim21/url-shortner'
-    # The EKS API is private. This trusted runner must have VPC connectivity.
-    runs-on: [self-hosted, linux, x64, nonprod-eks]
+    if: github.repository == 'mouslim21/url-shortner-testing' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/debug')))
+    # This sandbox exposes its authenticated EKS API publicly.
+    runs-on: ubuntu-latest
     environment: nonprod
     timeout-minutes: 30
     concurrency:
@@ -210,7 +218,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
           allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
           role-session-name: github-deploy-${{ github.run_id }}
@@ -223,7 +231,7 @@ jobs:
           version: v1.35.0
       - name: Configure Kubernetes access
         run: |
-          aws eks update-kubeconfig --name url-shortner-nonprod-eks --region us-east-1
+          aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
           kubectl auth can-i patch deployments -n url-shortner | grep -x yes
           if kubectl auth can-i patch deployments -n kube-system; then
             echo "Deployment identity must not manage kube-system."

@@ -37,21 +37,21 @@ variable "admin_principal_arn" {
 }
 
 variable "public_endpoint_enabled" {
-  description = "Opt in to CIDR-restricted public API access for local administration."
+  description = "Opt in to public API access using the explicitly configured IPv4 CIDRs."
   type        = bool
   default     = false
 }
 
 variable "trusted_public_cidrs" {
-  description = "Explicit trusted IPv4 CIDRs for public API access; prefer your public IP/32."
+  description = "Explicit IPv4 CIDRs for public API access; 0.0.0.0/0 allows all IPv4 addresses."
   type        = list(string)
   default     = []
 
   validation {
     condition = alltrue([for cidr in var.trusted_public_cidrs :
-      can(cidrnetmask(cidr)) && try(tonumber(split("/", cidr)[1]) > 0, false)
+      can(cidrnetmask(cidr))
     ])
-    error_message = "Provide valid IPv4 CIDRs narrower than /0."
+    error_message = "Provide valid IPv4 CIDRs."
   }
 }
 
@@ -82,5 +82,5 @@ variable "environment" {
 variable "aws_account_id" {
   description = "Expected AWS account for IAM principal validation."
   type        = string
-  default     = "957280466878"
+  default     = "478728046113"
 }
