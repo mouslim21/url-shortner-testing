@@ -14,6 +14,12 @@ CONFIG_BLOB = b'{"architecture":"amd64","rootfs":{"diff_ids":[]}}'
 CONFIG_ID = "sha256:" + hashlib.sha256(CONFIG_BLOB).hexdigest()
 
 
+@pytest.fixture(autouse=True)
+def target_account(monkeypatch):
+    monkeypatch.setenv("AWS_ACCOUNT_ID", "111122223333")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+
+
 @pytest.fixture
 def artifact(tmp_path):
     directory = tmp_path / "image-frontend"
@@ -74,7 +80,7 @@ def test_missing_tag_is_pushed_and_verified(artifact, docker, monkeypatch):
         "push",
     ]
     assert remote.call_count == 2
-    reference = f"{publisher.REGISTRY}/url-shortner-frontend:{TAG}"
+    reference = f"{publisher.expected_registry()}/url-shortner-frontend:{TAG}"
     assert docker.call_args_list[-1].args[0] == ["docker", "push", reference]
 
 
@@ -163,3 +169,22 @@ def test_post_push_identity_mismatch_is_still_rejected(artifact, docker, monkeyp
         RuntimeError, match="Published image identity verification failed"
     ):
         publisher.publish_image("frontend", TAG, artifact)
+
+
+@pytest.mark.parametrize(
+    "account,region", [("111122223333", "us-east-1"), ("444455556666", "eu-west-1")]
+)
+def test_registry_uses_target_account_and_region(monkeypatch, account, region):
+    monkeypatch.setenv("AWS_ACCOUNT_ID", account)
+    monkeypatch.setenv("AWS_REGION", region)
+    assert publisher.expected_registry() == f"{account}.dkr.ecr.{region}.amazonaws.com"
+
+
+@pytest.mark.parametrize("name", ["AWS_ACCOUNT_ID", "AWS_REGION"])
+def test_missing_account_configuration_fails_before_docker(monkeypatch, name):
+    monkeypatch.delenv(name)
+    run = Mock()
+    monkeypatch.setattr(publisher.subprocess, "run", run)
+    with pytest.raises(ValueError):
+        publisher.main()
+    run.assert_not_called()

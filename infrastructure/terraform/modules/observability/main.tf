@@ -70,7 +70,7 @@ resource "aws_eks_addon" "observability" {
   configuration_values = jsonencode({
     applicationSignals = { enabled = false }
     containerLogs      = { enabled = true }
-    agent = { config = jsonencode({
+    agent = { config = {
       logs = {
         metrics_collected = { kubernetes = {
           cluster_name                = var.cluster_name
@@ -79,7 +79,7 @@ resource "aws_eks_addon" "observability" {
         } }
         force_flush_interval = 5
       }
-    }) }
+    } }
   })
   # The official add-on shares cloudwatch-agent SA with Fluent Bit.
   pod_identity_association {

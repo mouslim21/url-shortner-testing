@@ -10,7 +10,7 @@ resource "aws_iam_role" "deployment" {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           # This repository uses GitHub's immutable owner/repository ID format.
-          "token.actions.githubusercontent.com:sub" = "repo:mouslim21@55384360/url-shortner@1442711965:environment:nonprod"
+          "token.actions.githubusercontent.com:sub" = "repo:mouslim21@55384360/url-shortner-testing@1444289754:environment:nonprod"
         }
       }
     }]

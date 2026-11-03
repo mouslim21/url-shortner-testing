@@ -12,7 +12,7 @@ locals {
 
 resource "aws_iam_role" "github_actions" {
   name        = "url-shortner-github-actions"
-  description = "GitHub Actions OIDC authentication for mouslim21/url-shortner main."
+  description = "GitHub Actions OIDC authentication for mouslim21/url-shortner-testing main."
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -25,7 +25,7 @@ resource "aws_iam_role" "github_actions" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:mouslim21@55384360/url-shortner@1442711965:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub" = "repo:mouslim21@55384360/url-shortner-testing@1444289754:ref:refs/heads/main"
         }
       }
     }]

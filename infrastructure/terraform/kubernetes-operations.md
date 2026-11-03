@@ -60,12 +60,12 @@ done
 ## Chart validation and manual installation
 
 The chart has no dependencies. `test-sha` is a render-only placeholder; do not
-install it. No Ingress, ALB, HPA or application CD is configured.
+install it. For current Ingress, ALB, HPA and application CI/CD instructions, see public-delivery-operations.md.
 
 ```bash
-helm lint helm/url-shortner
+helm lint helm/url-shortner --set-string image.registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 helm template url-shortner helm/url-shortner --namespace url-shortner \
-  -f helm/url-shortner/values-nonprod.yaml --set image.tag=test-sha
+  -f helm/url-shortner/values-nonprod.yaml --set image.tag=test-sha --set-string image.registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com" --set-string awsRegion="$AWS_REGION"
 ```
 
 Only after the infrastructure checks above pass, install manually:
@@ -74,7 +74,7 @@ Only after the infrastructure checks above pass, install manually:
 helm upgrade --install url-shortner helm/url-shortner \
   --namespace url-shortner --create-namespace \
   -f helm/url-shortner/values-nonprod.yaml \
-  --set-string image.tag="$IMAGE_TAG" --wait --timeout 5m
+  --set-string image.tag="$IMAGE_TAG" --set-string image.registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com" --set-string awsRegion="$AWS_REGION" --wait --timeout 5m
 
 for deployment in frontend url-service analytics-service; do
   kubectl -n url-shortner rollout status "deployment/$deployment" --timeout=180s

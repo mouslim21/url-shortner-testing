@@ -12,7 +12,6 @@ provider "aws" {
 variable "aws_account_id" {
   description = "Expected sandbox account; prevents using credentials for a different account."
   type        = string
-  default     = "957280466878"
 
   validation {
     condition     = can(regex("^[0-9]{12}$", var.aws_account_id))

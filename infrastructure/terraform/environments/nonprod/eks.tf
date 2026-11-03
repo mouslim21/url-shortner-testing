@@ -16,7 +16,7 @@ variable "eks_public_endpoint_enabled" {
 }
 
 variable "eks_trusted_public_cidrs" {
-  description = "Trusted public administrator IPv4 CIDRs, normally a single /32."
+  description = "Public administrator IPv4 CIDRs; 0.0.0.0/0 allows all IPv4 addresses."
   type        = list(string)
   default     = []
 }
