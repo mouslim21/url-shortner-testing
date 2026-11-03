@@ -49,3 +49,6 @@ coverage.json
 htmlcov/
 .nyc_output/
 
+
+# Generated account configuration, backend metadata and local state
+.local/

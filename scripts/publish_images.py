@@ -9,10 +9,16 @@ import tarfile
 from pathlib import Path
 
 COMPONENTS = ("frontend", "url-service", "analytics-service")
-REGISTRY = (
-    f"{os.getenv('AWS_ACCOUNT_ID', '478728046113')}.dkr.ecr."
-    f"{os.getenv('AWS_REGION', 'us-east-1')}.amazonaws.com"
-)
+
+
+def expected_registry() -> str:
+    account = os.getenv("AWS_ACCOUNT_ID", "")
+    region = os.getenv("AWS_REGION", "")
+    if not re.fullmatch(r"[0-9]{12}", account):
+        raise ValueError("AWS_ACCOUNT_ID must contain twelve digits")
+    if not re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-[0-9]+", region):
+        raise ValueError("AWS_REGION must be configured")
+    return f"{account}.dkr.ecr.{region}.amazonaws.com"
 
 
 def image_config_digest(archive_path: Path, reference: str) -> str:
@@ -75,7 +81,7 @@ def publish_image(component: str, tag: str, artifact_root: Path) -> None:
     if component not in COMPONENTS or not re.fullmatch(r"[0-9a-f]{40}", tag):
         raise ValueError("Expected a known component and full Git commit SHA")
     repository = f"url-shortner-{component}"
-    reference = f"{REGISTRY}/{repository}:{tag}"
+    reference = f"{expected_registry()}/{repository}:{tag}"
     artifact = artifact_root / f"image-{component}"
     expected = (artifact / "image-id.txt").read_text().strip()
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", expected):
@@ -111,7 +117,7 @@ def publish_image(component: str, tag: str, artifact_root: Path) -> None:
 
 
 def main() -> None:
-    if os.environ.get("ECR_REGISTRY") != REGISTRY:
+    if os.environ.get("ECR_REGISTRY") != expected_registry():
         raise ValueError("Unexpected ECR registry; refusing to publish")
     tag = os.environ["IMAGE_TAG"]
     for component in COMPONENTS:

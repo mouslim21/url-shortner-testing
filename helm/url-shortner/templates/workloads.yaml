@@ -62,7 +62,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: {{ $name }}
-          image: "{{ $.Values.image.registry }}/{{ $component.repository }}:{{ $.Values.image.tag }}"
+          image: "{{ required "image.registry must be supplied for the target account" $.Values.image.registry }}/{{ $component.repository }}:{{ $.Values.image.tag }}"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           {{- if eq $name "frontend" }}
           command: ["nginx"]

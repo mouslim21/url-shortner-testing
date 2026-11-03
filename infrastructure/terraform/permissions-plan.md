@@ -1,7 +1,7 @@
 # Nonprod AWS permission plan
 
 This document prepares later steps; it does not grant permissions. Account:
-`478728046113`. Region: `us-east-1`. Review the exact Terraform resources and
+`<ACCOUNT_ID>`. Region: `us-east-1`. Review the exact Terraform resources and
 provider API calls before preparing each provisioning policy.
 
 ## Separate responsibilities
@@ -23,9 +23,9 @@ The reviewable policy is `modules/github-oidc/ecr-push-policy.json.tftpl`.
 `ecr:GetAuthorizationToken` requires resource `*`. Repository-specific push and image-identity read actions target
 only these exact ARNs:
 
-- `arn:aws:ecr:us-east-1:478728046113:repository/url-shortner-frontend`
-- `arn:aws:ecr:us-east-1:478728046113:repository/url-shortner-url-service`
-- `arn:aws:ecr:us-east-1:478728046113:repository/url-shortner-analytics-service`
+- `arn:aws:ecr:us-east-1:<ACCOUNT_ID>:repository/url-shortner-frontend`
+- `arn:aws:ecr:us-east-1:<ACCOUNT_ID>:repository/url-shortner-url-service`
+- `arn:aws:ecr:us-east-1:<ACCOUNT_ID>:repository/url-shortner-analytics-service`
 
 No repository creation, deletion, policy administration, or image deletion is
 allowed. `ecr:BatchGetImage` permits immutable-tag identity checks on reruns. Full image

@@ -5,6 +5,8 @@ A cloud-native URL shortening application built with Python, FastAPI, and Nginx.
 
 The application follows a microservices architecture, with automated CI/CD, containerized deployments on Amazon EKS, and monitoring through AWS CloudWatch.
 
+For a new AWS account, follow [account setup](infrastructure/terraform/account-setup.md). Account changes use generated local inputs and GitHub variables, without editing scripts.
+
 ## 1. Application Overview
 
 The application provides three main capabilities:

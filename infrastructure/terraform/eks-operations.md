@@ -11,15 +11,12 @@ Run from the repository root. The S3 backend must already exist.
 export AWS_PROFILE=kata-dev
 export AWS_REGION=us-east-1
 aws sts get-caller-identity
-cp infrastructure/terraform/environments/nonprod/eks.tfvars.example \
-   infrastructure/terraform/environments/nonprod/eks.auto.tfvars
+python3 scripts/configure_account.py --profile "$AWS_PROFILE" --region "$AWS_REGION"
 ```
 
-Review the ignored `eks.auto.tfvars`. The example contains the verified local
-principal `arn:aws:iam::478728046113:user/cloud_user`. Confirm this remains your
-intended administrator. For assumed-role credentials, resolve the stable IAM
-role ARN, including any role path; do not copy an STS session ARN into an access
-entry. GitHub's publishing role is explicitly rejected as the administrator.
+Follow [account-setup.md](account-setup.md) for generated inputs, state/backend
+isolation and the init/plan commands. The administrator comes from STS identity;
+assumed roles are resolved to a stable IAM role ARN. Do not use a session ARN.
 
 The default Kubernetes version is 1.35, verified in standard support in us-east-1
 on November 2, 2026. Recheck before deployment:
@@ -42,8 +39,8 @@ eks_public_endpoint_enabled = true
 eks_trusted_public_cidrs    = ["YOUR_PUBLIC_IPV4/32"]
 ```
 
-An empty CIDR list when public access is enabled, invalid CIDRs, and /0 are
-rejected. Update the trusted address through a reviewed Terraform change when
+An empty CIDR list when public access is enabled, and invalid CIDRs are
+rejected. All-IPv4 access (`0.0.0.0/0`) is supported when explicitly requested. Update the trusted address through a reviewed Terraform change when
 VPN/ISP egress changes. Private worker traffic does not require adding the NAT
 Gateway's public IP to this list because the private endpoint remains enabled.
 

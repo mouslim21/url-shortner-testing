@@ -12,7 +12,6 @@ variable "state_bucket_name" {
 variable "aws_account_id" {
   description = "Expected sandbox account; prevents using credentials for a different account."
   type        = string
-  default     = "478728046113"
 
   validation {
     condition     = can(regex("^[0-9]{12}$", var.aws_account_id))

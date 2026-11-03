@@ -82,5 +82,4 @@ variable "environment" {
 variable "aws_account_id" {
   description = "Expected AWS account for IAM principal validation."
   type        = string
-  default     = "478728046113"
 }
