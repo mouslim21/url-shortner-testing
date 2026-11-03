@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   authenticate:
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/debug') && github.repository == 'mouslim21/url-shortner-testing'
+    if: github.ref == 'refs/heads/main' && github.repository == 'mouslim21/url-shortner-testing'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

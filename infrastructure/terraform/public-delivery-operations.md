@@ -6,14 +6,16 @@ All development and GitHub settings changes belong to this testing repository.
 
 ## Pipeline behavior
 
-- Pushes to `main` and `feature/debug`, and PRs targeting `main`, run Compose
-  validation, Ruff, Pytest, Docker builds, and Trivy scanning.
-- Successful `main` pushes publish validated images and deploy automatically.
-- `feature/debug` pushes validate without publishing or deploying. To deploy this
-  branch, explicitly run workflow `CI` with input `deploy=true` and that branch.
-- Manual runs with `deploy=false` perform validation only.
-- Build artifacts are uploaded for delivery runs. Publishing loads those exact
-  scanned image archives and verifies immutable full-commit-SHA image identity.
+- PRs targeting `main` run Compose validation, Ruff, Pytest, Docker builds and
+  Trivy scans. They cannot publish images or deploy.
+- Merging a PR into `main` creates a `push` event on `main`, which runs validation,
+  publishes scanned images with the exact commit SHA and deploys nonprod.
+- Closing a PR without merging does not deploy.
+- Feature-branch pushes do not trigger this workflow. There is no manual CI
+  dispatch trigger or branch publishing/deployment option.
+- The separate manual OIDC identity test accepts `main` only and never deploys.
+- Build artifacts are uploaded only on successful `main` push delivery runs.
+  Publishing loads those exact scanned archives and verifies immutable image IDs.
 - Deployment uses a GitHub-hosted runner and OIDC. The sandbox EKS API is public
   for `0.0.0.0/0` by explicit user request; private access also remains enabled.
   API reachability does not grant Kubernetes authorization.
@@ -33,14 +35,14 @@ Repository variables:
 
 Environment `nonprod`:
 
-- Custom branch policies permit `main` and `feature/debug` only, with no tag policies.
+- Custom branch policies permit `main` only, with no tag policies.
 - `AWS_DEPLOY_ROLE_ARN` = `arn:aws:iam::478728046113:role/url-shortner-github-deploy-nonprod`.
 - No static AWS access keys are stored in GitHub.
 
 GitHub confirmed immutable OIDC subject prefix:
 `repo:mouslim21@55384360/url-shortner-testing@1444289754`.
-Publishing trusts its exact `ref:refs/heads/main` and `ref:refs/heads/feature/debug`
-subjects; deployment trusts its exact `environment:nonprod` subject. Both require
+Publishing trusts only its exact `ref:refs/heads/main`
+subject; deployment trusts its exact `environment:nonprod` subject. Both require
 `sts.amazonaws.com` audience. Terraform must apply the reviewed trust changes
 before either role can authenticate this repository. GitHub variables alone do
 not update AWS trust.
@@ -85,16 +87,22 @@ and remain ignored. Preserve Terraform state and review all plans. The nonprod
 configuration enables public API access in local inputs; the source module still
 defaults to private-only API access.
 
-## Run the application pipeline after prerequisites and approval
+## Deploy through a PR merge
+
+Push the feature branch to this testing repository, then review and merge its PR
+into `main` when authorized. Do not push changes to the original repository.
+This change does not create or merge a PR automatically.
 
 ```bash
-gh workflow run ci.yml --repo mouslim21/url-shortner-testing --ref feature/debug -f deploy=true
-gh run list --repo mouslim21/url-shortner-testing --workflow ci.yml --limit 5
+gh run list --repo mouslim21/url-shortner-testing --workflow ci.yml --branch main --limit 5
 ```
 
-The workflow must succeed through lint/tests, all three builds and scan gates,
-OIDC/ECR publishing, and Helm deployment. Its final output includes the deployed
-commit and Application URL. Do not equate validation success with delivery.
-Verify frontend access, URL creation, 302 destination, and analytics counter
-through the public URL. SNS email delivery remains unconfigured until an alert
-email is supplied and its subscription confirmed.
+CI must succeed through lint/tests, all three builds and scan gates, OIDC/ECR
+publishing, and Helm deployment. Its output includes the deployed commit and
+Application URL. Verify frontend access, URL creation, 302 destination and the
+analytics counter through that URL. SNS email delivery remains unconfigured
+until an alert email is supplied and its subscription confirmed.
+
+The workflow runs on any `main` push, including direct pushes if repository rules
+permit them. Enforce a required-PR branch protection rule separately if direct
+pushes to `main` must be prohibited.

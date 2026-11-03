@@ -1,14 +1,8 @@
 name: CI
 
 on:
-  workflow_dispatch:
-    inputs:
-      deploy:
-        description: Publish validated images and deploy nonprod
-        type: boolean
-        default: false
   push:
-    branches: [main, feature/debug]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -143,7 +137,7 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
       - name: Upload validated image
-        if: success() && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/debug')))
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v7.0.2
         with:
           name: image-${{ matrix.component }}
@@ -155,7 +149,7 @@ jobs:
   publish:
     name: Publish validated images to ECR
     needs: [compose, lint, tests, images]
-    if: github.repository == 'mouslim21/url-shortner-testing' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/debug')))
+    if: github.repository == 'mouslim21/url-shortner-testing' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:
@@ -190,7 +184,7 @@ jobs:
   deploy:
     name: Deploy nonprod
     needs: [publish]
-    if: github.repository == 'mouslim21/url-shortner-testing' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/debug')))
+    if: github.repository == 'mouslim21/url-shortner-testing' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     # This sandbox exposes its authenticated EKS API publicly.
     runs-on: ubuntu-latest
     environment: nonprod

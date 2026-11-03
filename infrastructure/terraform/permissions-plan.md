@@ -10,9 +10,7 @@ provider API calls before preparing each provisioning policy.
   The sandbox administrator controls that identity's permissions. Do not copy
   its credentials into GitHub or extend the CI role to match the local identity.
 - GitHub's `url-shortner-github-actions` role uses OIDC from
-  `repo:mouslim21@55384360/url-shortner-testing@1444289754:ref:refs/heads/main`, and
-  `repo:mouslim21@55384360/url-shortner-testing@1444289754:ref:refs/heads/feature/debug`,
-  with audience `sts.amazonaws.com`. Do not add a GitHub Environment to its job without reviewing
+  `repo:mouslim21@55384360/url-shortner-testing@1444289754:ref:refs/heads/main`, with audience `sts.amazonaws.com`. Do not add a GitHub Environment to its job without reviewing
   the resulting OIDC subject, which differs from the branch subject.
 - Step 4C adds only ECR authentication and image-push permissions. It creates no
   repositories and grants no infrastructure provisioning or Kubernetes access.
